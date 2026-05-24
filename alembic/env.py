@@ -8,7 +8,7 @@ from alembic import context
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__))) 
  
 from shared.db.base import Base 
-import shared.entities
+import shared.entities  # importa todas as entidades 
  
 config = context.config 
 if config.config_file_name is not None: 
