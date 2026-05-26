@@ -8,12 +8,11 @@ class AlbumService:
         self.repo = repo
 
     async def create(self, title: str, year: int, artist_id: str, cover_url: str | None = None) -> Album:
-        # Validação: ano entre 1900 e ano atual
+
         current_year = datetime.now().year
         if year < 1900 or year > current_year:
             raise HTTPException(status_code=400, detail=f"Year must be between 1900 and {current_year}")
 
-        # Validação: título único por artista
         existing = await self.repo.get_by_title_and_artist(title, artist_id)
         if existing:
             raise HTTPException(status_code=409, detail="Album with this title already exists for this artist")
@@ -34,7 +33,6 @@ class AlbumService:
         album = await self.get_by_id(album_id)
 
         if title is not None:
-            # Se o título mudou, verifica unicidade por artista (ignorando o próprio álbum)
             existing = await self.repo.get_by_title_and_artist(title, album.artist_id)
             if existing and existing.id != album.id:
                 raise HTTPException(status_code=409, detail="Album title already taken for this artist")
@@ -53,4 +51,8 @@ class AlbumService:
 
     async def delete(self, album_id: str) -> None:
         album = await self.get_by_id(album_id)
+
+        if await self.repo.has_songs(album_id):
+            raise HTTPException(status_code=409, detail="Album cannot be deleted because it contains songs")
+
         await self.repo.delete(album)

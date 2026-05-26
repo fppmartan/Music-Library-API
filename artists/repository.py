@@ -27,3 +27,15 @@ class ArtistRepository:
     async def delete(self, artist: Artist) -> None:
         await self.session.delete(artist)
         await self.session.commit()
+        
+    async def has_songs_as_main(self, artist_id: str) -> bool:
+        from shared.entities.song import Song
+        stmt = select(Song).where(Song.artist_id == artist_id).limit(1)
+        result = await self.session.execute(stmt)
+        return result.first() is not None
+
+    async def has_songs_as_feat(self, artist_id: str) -> bool:
+        from shared.entities.song import song_feats
+        stmt = select(song_feats).where(song_feats.c.artist_id == artist_id).limit(1)
+        result = await self.session.execute(stmt)
+        return result.first() is not None

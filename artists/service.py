@@ -35,4 +35,18 @@ class ArtistService:
 
     async def delete(self, artist_id: str) -> None:
         artist = await self.get_by_id(artist_id)
+
+
+        if await self.repo.has_songs_as_main(artist_id):
+            raise HTTPException(
+                status_code=409,
+                detail="Artist cannot be deleted because they are the main artist in one or more songs"
+            )
+
+        if await self.repo.has_songs_as_feat(artist_id):
+            raise HTTPException(
+                status_code=409,
+                detail="Artist cannot be deleted because they are featured in one or more songs"
+            )
+
         await self.repo.delete(artist)

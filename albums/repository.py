@@ -29,3 +29,9 @@ class AlbumRepository:
     async def delete(self, album: Album) -> None:
         await self.session.delete(album)
         await self.session.commit()
+        
+    async def has_songs(self, album_id: str) -> bool:
+        from shared.entities.song import Song
+        stmt = select(Song).where(Song.album_id == album_id).limit(1)
+        result = await self.session.execute(stmt)
+        return result.first() is not None
